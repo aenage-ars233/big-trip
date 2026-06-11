@@ -3,10 +3,9 @@ import EventsListView from '../view/events-list-view.js';
 import NewPointFormView from '../view/new-point-form-view.js';
 import EditFormView from '../view/edit-form-view.js';
 import PointView from '../view/point-view.js';
-import {render} from '../render.js';
+import {render} from '../framework/render.js';
 
 export default class BoardPresenter {
-  sortComponent = new SortView();
   eventsListComponent = new EventsListView();
   newPointFormComponent = new NewPointFormView();
 
@@ -16,17 +15,17 @@ export default class BoardPresenter {
   }
 
   init() {
-    this.boardPoints = [...this.pointModel.getPoints()];
+    this.boardPoints = [...this.pointModel.points];
 
-    render(this.sortComponent, this.container);
+    render(new SortView(), this.container);
     render(this.eventsListComponent, this.container);
     render(new EditFormView({
       point: this.boardPoints[0],
-      allDestinations: this.pointModel.getDestinations(),
+      allDestinations: this.pointModel.destinations,
       destination: this.pointModel.getDestinationById(this.boardPoints[0].destination),
-      offers: this.pointModel.getOffersByType(this.boardPoints[0].type),
+      offers: this.pointModel.offers,
       checkedOffers: this.boardPoints[0].offers.map((offerId) => this.pointModel.getOfferById(offerId))
-    }), this.eventsListComponent.getElement());
+    }), this.eventsListComponent.element);
 
     for (let i = 0; i < this.boardPoints.length; i++) {
       const currentPoint = this.boardPoints[i];
@@ -37,7 +36,7 @@ export default class BoardPresenter {
         point: currentPoint,
         destination: currentPointDestination,
         offers: currentPointSelectedOffers
-      }), this.eventsListComponent.getElement());
+      }), this.eventsListComponent.element);
     }
   }
 }
