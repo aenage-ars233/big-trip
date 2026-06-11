@@ -35,11 +35,12 @@ export default class BoardPresenter {
       const currentPointDestination = this.#pointModel.getDestinationById(currentPoint.destination);
       const currentPointSelectedOffers = currentPoint.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
 
-      render(new PointView({
-        point: currentPoint,
-        destination: currentPointDestination,
-        offers: currentPointSelectedOffers
-      }), this.#eventsListComponent.element);
+      this.#renderPoint(currentPoint, currentPointDestination, currentPointSelectedOffers);
     }
+  }
+
+  #renderPoint(point, destination, offers) {
+    const pointComponent = new PointView({ point, destination, offers });
+    render(pointComponent, this.#eventsListComponent.element);
   }
 }
