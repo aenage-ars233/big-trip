@@ -27,7 +27,6 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
   const { type, basePrice, dateFrom, dateTo } = point;
   const formattedDateFrom = humanizePointDate(dateFrom, 'DD/MM/YY HH:mm');
   const formattedDateTo = humanizePointDate(dateTo, 'DD/MM/YY HH:mm');
-  console.log(offers, checkedOffers);
 
   return (
     `<li class="trip-events__item">
@@ -106,16 +105,22 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
 }
 
 export default class EditFormView extends AbstractView {
+  #point;
+  #allDestinations;
+  #destination;
+  #offers;
+  #checkedOffers;
+
   constructor({ point, allDestinations, destination, offers, checkedOffers }) {
     super();
-    this.point = point;
-    this.allDestinations = allDestinations;
-    this.destination = destination;
-    this.offers = offers;
-    this.checkedOffers = checkedOffers;
+    this.#point = point;
+    this.#allDestinations = allDestinations;
+    this.#destination = destination;
+    this.#offers = offers;
+    this.#checkedOffers = checkedOffers;
   }
 
   get template() {
-    return createEditFormTemplate(this.point, this.allDestinations, this.destination, this.offers, this.checkedOffers);
+    return createEditFormTemplate(this.#point, this.#allDestinations, this.#destination, this.#offers, this.#checkedOffers);
   }
 }
