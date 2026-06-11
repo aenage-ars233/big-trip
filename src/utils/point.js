@@ -3,10 +3,6 @@ import dayjs from 'dayjs';
 const DATE_FORMAT = 'MMMM D';
 const TIME_FORMAT = 'HH:mm';
 
-function getRandomArrayElement(items = []) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
 function humanizePointDate(date, format = DATE_FORMAT) {
   return date ? dayjs(date).format(format) : '';
 }
@@ -24,4 +20,4 @@ function countPointDuration(dateFrom, dateTo) {
   return `${days > 0 ? `${days}D` : ''} ${hours > 0 ? `${hours}H` : ''} ${minutes > 0 ? `${minutes}M` : ''}`;
 }
 
-export {getRandomArrayElement, humanizePointDate, humanizePointTime, countPointDuration};
+export {humanizePointDate, humanizePointTime, countPointDuration};

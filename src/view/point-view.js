@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizePointDate, humanizePointTime, countPointDuration} from '../utils.js';
+import {humanizePointDate, humanizePointTime, countPointDuration} from '../utils/point.js';
 
 function createSelectedOffersTemplate(offers) {
   return offers.length > 0 ? (
