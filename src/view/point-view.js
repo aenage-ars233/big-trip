@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import {humanizePointDate, humanizePointTime, countPointDuration} from '../utils/point.js';
 
-function createSelectedOffersTemplate(offers) {
+function createSelectedOffersTemplate(offers = []) {
   return offers.length > 0 ? (
     `<ul class="event__selected-offers">
       ${offers.map((offer) => `<li class="event__offer">${offer.title} +€&nbsp;${offer.price}</li>`).join('')}
@@ -56,15 +56,24 @@ export default class PointView extends AbstractView {
   #point;
   #destination;
   #offers;
+  #handleEditClick = null;
 
-  constructor({ point, destination, offers }) {
+  constructor({ point, destination, selectedOffers, onEditClick }) {
     super();
     this.#point = point;
     this.#destination = destination;
-    this.#offers = offers;
+    this.#offers = selectedOffers;
+    this.#handleEditClick = onEditClick;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
   }
 
   get template() {
     return createPointTemplate(this.#point, this.#destination, this.#offers);
   }
+
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 }

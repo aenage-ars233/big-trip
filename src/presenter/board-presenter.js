@@ -3,7 +3,7 @@ import EventsListView from '../view/events-list-view.js';
 import NewPointFormView from '../view/new-point-form-view.js';
 import EditFormView from '../view/edit-form-view.js';
 import PointView from '../view/point-view.js';
-import {render} from '../framework/render.js';
+import {render, replace} from '../framework/render.js';
 
 export default class BoardPresenter {
   #pointModel;
@@ -22,25 +22,54 @@ export default class BoardPresenter {
 
     render(new SortView(), this.#container);
     render(this.#eventsListComponent, this.#container);
-    render(new EditFormView({
+    /*render(new EditFormView({
       point: this.#boardPoints[0],
       allDestinations: this.#pointModel.destinations,
       destination: this.#pointModel.getDestinationById(this.#boardPoints[0].destination),
       offers: this.#pointModel.getOffersByType(this.#boardPoints[0].type),
       checkedOffers: this.#boardPoints[0].offers.map((offerId) => this.#pointModel.getOfferById(offerId))
-    }), this.#eventsListComponent.element);
+    }), this.#eventsListComponent.element);*/
 
     for (let i = 0; i < this.#boardPoints.length; i++) {
       const currentPoint = this.#boardPoints[i];
+      const allDestinations = this.#pointModel.destinations;
       const currentPointDestination = this.#pointModel.getDestinationById(currentPoint.destination);
+      const allOffersByType = this.#pointModel.getOffersByType(currentPoint.type);
       const currentPointSelectedOffers = currentPoint.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
 
-      this.#renderPoint(currentPoint, currentPointDestination, currentPointSelectedOffers);
+      this.#renderPoint(currentPoint, currentPointDestination, allDestinations, allOffersByType, currentPointSelectedOffers);
     }
   }
 
-  #renderPoint(point, destination, offers) {
-    const pointComponent = new PointView({ point, destination, offers });
+  #renderPoint(point, destination, allDestinations, offers, selectedOffers) {
+    const escKeyDownHandler = (evt) => {
+      if (evt.key === 'Escape') {
+        evt.preventDefault();
+        replaceEditFormToPoint();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    };
+
+    const pointComponent = new PointView({ point, destination, selectedOffers, onEditClick: () => {
+      replacePointToEditForm();
+    }});
+
+    const editFormComponent = new EditFormView({ point, allDestinations, destination, offers, selectedOffers, onFormSubmit: () => {
+      replaceEditFormToPoint();
+    }, onCloseClick: () => {
+      replaceEditFormToPoint();
+    }});
+
+    function replacePointToEditForm() {
+      replace(editFormComponent, pointComponent);
+      document.addEventListener('keydown', escKeyDownHandler);
+    }
+
+    function replaceEditFormToPoint() {
+      replace(pointComponent, editFormComponent);
+      document.removeEventListener('keydown', escKeyDownHandler);
+    }
+
     render(pointComponent, this.#eventsListComponent.element);
   }
 }
