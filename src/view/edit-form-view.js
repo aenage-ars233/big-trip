@@ -45,7 +45,7 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
 
               ${POINT_TYPES.map((pointType) => `
                 <div class="event__type-item">
-                    <input id="event-type-${pointType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType.toLowerCase()}">
+                    <input id="event-type-${pointType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType.toLowerCase()}" ${pointType.toLowerCase() === type ? 'checked' : ''}>
                     <label class="event__type-label  event__type-label--${pointType.toLowerCase()}" for="event-type-${pointType.toLowerCase()}-1">${pointType}</label>
                   </div>
               `).join('')}

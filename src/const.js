@@ -1,4 +1,11 @@
-const POINT_COUNT = 3;
+const POINT_COUNT = 5;
 const POINT_TYPES = ['Taxi', 'Bus', 'Train', 'Ship', 'Drive', 'Flight', 'Check-in', 'Sightseeing', 'Restaurant'];
 
-export {POINT_COUNT, POINT_TYPES};
+const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past',
+};
+
+export {POINT_COUNT, POINT_TYPES, FilterType};
