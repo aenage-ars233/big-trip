@@ -1,8 +1,9 @@
+import {nanoid} from 'nanoid';
 import {getRandomArrayElement} from '../utils/common.js';
 
 const points = [
   {
-    id: 'f4b62099-293f-4c3d-a702-94eec4a2808c',
+    id: nanoid(),
     basePrice: 1100,
     dateFrom: '2026-07-10T23:55:56.845Z',
     dateTo: '2026-08-11T11:22:13.375Z',
@@ -15,7 +16,7 @@ const points = [
     type: 'taxi'
   },
   {
-    id: 'f4b62099-293f-4c3d-a702-94eec4a2808d',
+    id: nanoid(),
     basePrice: 1500,
     dateFrom: '2026-05-05T22:55:56.845Z',
     dateTo: '2026-07-06T11:22:13.375Z',
@@ -27,7 +28,7 @@ const points = [
     type: 'flight'
   },
   {
-    id: 'f4b62099-293f-4c3d-a702-94eec4a2808t',
+    id: nanoid(),
     basePrice: 500,
     dateFrom: '2019-02-10T22:55:56.845Z',
     dateTo: '2019-02-11T11:22:13.375Z',
@@ -39,7 +40,7 @@ const points = [
     type: 'check-in'
   },
   {
-    id: 'f4b62099-293f-4c3d-a902-94eec4a2808t',
+    id: nanoid(),
     basePrice: 700,
     dateFrom: '2019-03-10T22:55:56.845Z',
     dateTo: '2019-03-11T11:22:13.375Z',
@@ -49,7 +50,7 @@ const points = [
     type: 'ship'
   },
   {
-    id: 'f4b62099-293f-4c3d-a902-94eec4a2808t',
+    id: nanoid(),
     basePrice: 900,
     dateFrom: '2020-07-10T22:55:56.845Z',
     dateTo: '2022-07-11T11:22:13.375Z',
@@ -61,7 +62,13 @@ const points = [
 ];
 
 function getRandomPoint() {
-  return getRandomArrayElement(points);
+  const randomPoint = getRandomArrayElement(points);
+
+  return {
+    ...randomPoint,
+    id: nanoid(),
+    offers: [...randomPoint.offers],
+  };
 }
 
 export {getRandomPoint};

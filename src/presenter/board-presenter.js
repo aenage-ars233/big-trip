@@ -8,11 +8,14 @@ import PointPresenter from './point-presenter.js';
 export default class BoardPresenter {
   #pointModel;
   #boardPoints = [];
+
   #container;
   #eventsListComponent = new EventsListView();
   #newPointFormComponent = new NewPointFormView();
   #sortComponent = new SortView();
   #noPointsComponent = new NoPointsView();
+
+  #pointPresenters = new Map();
 
   constructor({ container, pointModel }) {
     this.#container = container;
@@ -30,10 +33,16 @@ export default class BoardPresenter {
     });
 
     pointPresenter.init(point, destination, allDestinations, offers, selectedOffers);
+    this.#pointPresenters.set(point.id, pointPresenter);
   }
 
   #renderSort() {
     render(this.#sortComponent, this.#container);
+  }
+
+  #clearPointsList() {
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
   }
 
   #renderPointsList() {
