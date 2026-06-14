@@ -1,3 +1,4 @@
+import {updateItem} from '../utils/common.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import NewPointFormView from '../view/new-point-form-view.js';
@@ -30,11 +31,17 @@ export default class BoardPresenter {
   #renderPoint(point, destination, allDestinations, offers, selectedOffers) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#eventsListComponent.element,
+      onDataChange: this.#handlePointChange,
     });
 
     pointPresenter.init(point, destination, allDestinations, offers, selectedOffers);
     this.#pointPresenters.set(point.id, pointPresenter);
   }
+
+  #handlePointChange = (updatedPoint, updatedDestination, allDestinations, updatedOffers, updatedSelectedOffers) => {
+    this.#boardPoints = updateItem(this.#boardPoints, updatedPoint);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, allDestinations, updatedOffers, updatedSelectedOffers);
+  };
 
   #renderSort() {
     render(this.#sortComponent, this.#container);
