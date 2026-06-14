@@ -1,4 +1,6 @@
 import {updateItem} from '../utils/common.js';
+import {sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
+import {SortType} from '../const.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import NewPointFormView from '../view/new-point-form-view.js';
@@ -9,6 +11,7 @@ import PointPresenter from './point-presenter.js';
 export default class BoardPresenter {
   #pointModel;
   #boardPoints = [];
+  #sourcedBoardPoints = [];
 
   #container;
   #eventsListComponent = new EventsListView();
@@ -17,6 +20,7 @@ export default class BoardPresenter {
   #noPointsComponent = new NoPointsView();
 
   #pointPresenters = new Map();
+  #currentSortType = SortType.DEFAULT;
 
   constructor({ container, pointModel }) {
     this.#container = container;
@@ -25,6 +29,8 @@ export default class BoardPresenter {
 
   init() {
     this.#boardPoints = [...this.#pointModel.points];
+    this.#sourcedBoardPoints = [...this.#pointModel.points];
+
     this.#renderBoard();
   }
 
@@ -41,6 +47,7 @@ export default class BoardPresenter {
 
   #handlePointChange = (updatedPoint, updatedDestination, allDestinations, updatedOffers, updatedSelectedOffers) => {
     this.#boardPoints = updateItem(this.#boardPoints, updatedPoint);
+    this.#sourcedBoardPoints = updateItem(this.#sourcedBoardPoints, updatedPoint);
     this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, allDestinations, updatedOffers, updatedSelectedOffers);
   };
 
@@ -48,10 +55,29 @@ export default class BoardPresenter {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
+  #sortPoints(sortType) {
+    switch (sortType) {
+      case SortType.PRICE:
+        this.#boardPoints.sort(sortPointsByPrice);
+        break;
+      case SortType.TIME:
+        this.#boardPoints.sort(sortPointsByTime);
+        break;
+      default:
+        this.#boardPoints = [...this.#sourcedBoardPoints];
+    }
+
+    this.#currentSortType = sortType;
+  }
+
   #handleSortTypeChange = (sortType) => {
-    // - Сортируем задачи
-    // - Очищаем список
-    // - Рендерим список заново
+    if (this.#currentSortType === sortType) {
+      return null;
+    }
+
+    this.#sortPoints(sortType);
+    this.#clearPointsList();
+    this.#renderPointsList();
   };
 
   #renderSort() {
