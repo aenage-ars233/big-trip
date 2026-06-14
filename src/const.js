@@ -21,6 +21,16 @@ const FilterType = {
 };
 
 /**
+ * Типы сортировки точек маршрута
+ * @type {Object}
+ */
+const SortType = {
+  DEFAULT: 'day',
+  PRICE: 'price',
+  TIME: 'time',
+};
+
+/**
  * Тексты для отображения при отсутствии точек маршрута в зависимости от выбранного фильтра
  * @type {Object}
  */
@@ -31,4 +41,4 @@ const NoPointsText = {
   [FilterType.PAST]: 'There are no past events now',
 };
 
-export {POINT_COUNT, POINT_TYPES, FilterType, NoPointsText};
+export {POINT_COUNT, POINT_TYPES, FilterType, SortType, NoPointsText};
