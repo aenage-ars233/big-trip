@@ -1,5 +1,5 @@
 import {updateItem} from '../utils/common.js';
-import {sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
+import {sortPointsByDate, sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
 import {SortType} from '../const.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
@@ -64,7 +64,7 @@ export default class BoardPresenter {
         this.#boardPoints.sort(sortPointsByTime);
         break;
       default:
-        this.#boardPoints = [...this.#sourcedBoardPoints];
+        this.#boardPoints.sort(sortPointsByDate);
     }
 
     this.#currentSortType = sortType;
@@ -118,6 +118,7 @@ export default class BoardPresenter {
     }
 
     this.#renderSort();
+    this.#sortPoints('day');
     this.#renderPointsList();
   }
 }

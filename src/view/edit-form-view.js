@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import {humanizePointDate} from '../utils/point.js';
 import {POINT_TYPES} from '../const.js';
 
@@ -104,7 +104,7 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
   );
 }
 
-export default class EditFormView extends AbstractView {
+export default class EditFormView extends AbstractStatefulView {
   #point;
   #allDestinations;
   #destination;

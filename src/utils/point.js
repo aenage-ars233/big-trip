@@ -77,6 +77,16 @@ function isPointPresent(dateFrom, dateTo) {
 }
 
 /**
+ * Функция сортировки точек по дате начала
+ * @param {*} aPoint
+ * @param {*} bPoint
+ * @returns
+ */
+function sortPointsByDate(aPoint, bPoint) {
+  return dayjs(aPoint.dateFrom).diff(dayjs(bPoint.dateFrom));
+}
+
+/**
  * Функция сортировки точек по цене
  * @param {*} aPoint
  * @param {*} bPoint
@@ -99,4 +109,4 @@ function sortPointsByTime(aPoint, bPoint) {
   return bPointDuration - aPointDuration;
 }
 
-export {humanizePointDate, humanizePointTime, countPointDuration, isPointFuture, isPointPast, isPointPresent, sortPointsByPrice, sortPointsByTime};
+export {humanizePointDate, humanizePointTime, countPointDuration, isPointFuture, isPointPast, isPointPresent, sortPointsByPrice, sortPointsByTime, sortPointsByDate};
