@@ -34,21 +34,21 @@ export default class BoardPresenter {
     this.#renderBoard();
   }
 
-  #renderPoint(point, destination, allDestinations, offers, selectedOffers) {
+  #renderPoint(point, destination, allDestinations, allOffers, offers, selectedOffers) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#eventsListComponent.element,
       onDataChange: this.#handlePointChange,
       onModeChange: this.#handleModeChange,
     });
 
-    pointPresenter.init(point, destination, allDestinations, offers, selectedOffers);
+    pointPresenter.init(point, destination, allDestinations, allOffers, offers, selectedOffers);
     this.#pointPresenters.set(point.id, pointPresenter);
   }
 
-  #handlePointChange = (updatedPoint, updatedDestination, allDestinations, updatedOffers, updatedSelectedOffers) => {
+  #handlePointChange = (updatedPoint, updatedDestination, allDestinations, allOffers, updatedOffers, updatedSelectedOffers) => {
     this.#boardPoints = updateItem(this.#boardPoints, updatedPoint);
     this.#sourcedBoardPoints = updateItem(this.#sourcedBoardPoints, updatedPoint);
-    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, allDestinations, updatedOffers, updatedSelectedOffers);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, allDestinations, allOffers, updatedOffers, updatedSelectedOffers);
   };
 
   #handleModeChange = () => {
@@ -100,10 +100,11 @@ export default class BoardPresenter {
       const currentPoint = this.#boardPoints[i];
       const allDestinations = this.#pointModel.destinations;
       const currentPointDestination = this.#pointModel.getDestinationById(currentPoint.destination);
+      const allOffers = this.#pointModel.offers;
       const allOffersByType = this.#pointModel.getOffersByType(currentPoint.type);
       const currentPointSelectedOffers = currentPoint.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
 
-      this.#renderPoint(currentPoint, currentPointDestination, allDestinations, allOffersByType, currentPointSelectedOffers);
+      this.#renderPoint(currentPoint, currentPointDestination, allDestinations, allOffers, allOffersByType, currentPointSelectedOffers);
     }
   }
 

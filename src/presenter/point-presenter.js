@@ -15,6 +15,7 @@ export default class PointPresenter {
   #point = null;
   #destination = null;
   #allDestinations = null;
+  #allOffers = null;
   #offers = null;
   #selectedOffers = null;
   #mode = Mode.DEFAULT;
@@ -28,10 +29,11 @@ export default class PointPresenter {
     this.#handleModeChange = onModeChange;
   }
 
-  init(point, destination, allDestinations, offers, selectedOffers) {
+  init(point, destination, allDestinations, allOffers, offers, selectedOffers) {
     this.#point = point;
     this.#destination = destination;
     this.#allDestinations = allDestinations;
+    this.#allOffers = allOffers;
     this.#offers = offers;
     this.#selectedOffers = selectedOffers;
 
@@ -50,6 +52,7 @@ export default class PointPresenter {
       point: this.#point,
       allDestinations: this.#allDestinations,
       destination: this.#destination,
+      allOffers: this.#allOffers,
       offers: this.#offers,
       selectedOffers: this.#selectedOffers,
       onFormSubmit: this.#replaceEditFormToPoint,
@@ -106,6 +109,6 @@ export default class PointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite }, this.#destination, this.#allDestinations, this.#offers, this.#selectedOffers);
+    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite }, this.#destination, this.#allDestinations, this.#allOffers, this.#offers, this.#selectedOffers);
   };
 }

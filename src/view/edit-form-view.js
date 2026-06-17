@@ -57,7 +57,7 @@ function createEditFormTemplate(state, allDestinations) {
             <label class="event__label  event__type-output" for="event-destination-1">
               ${point.type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointDestination.name}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointDestination ? pointDestination.name : ''}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${allDestinations.map(({ name }) => `<option value="${name}"></option>`).join('')}
             </datalist>
@@ -88,7 +88,7 @@ function createEditFormTemplate(state, allDestinations) {
         <section class="event__details">
           ${createOffersTemplate(pointOffers, pointSelectedOffers)}
 
-          <section class="event__section  event__section--destination">
+          ${pointDestination ? `<section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${pointDestination.description}</p>
 
@@ -97,7 +97,7 @@ function createEditFormTemplate(state, allDestinations) {
                 ${pointDestination.pictures.map(({ src, description }) => `<img class="event__photo" src="${src}" alt="${description}">`).join('')}
               </div>
             </div>
-          </section>
+          </section>` : ''}
         </section>
       </form>
     </li>`
@@ -107,15 +107,17 @@ function createEditFormTemplate(state, allDestinations) {
 export default class EditFormView extends AbstractStatefulView {
   #point;
   #allDestinations;
+  #allOffers;
   #destination;
   #offers;
   #checkedOffers;
   #handleFormSubmit = null;
   #handleCloseClick = null;
 
-  constructor({ point, allDestinations, destination, offers, selectedOffers, onFormSubmit, onCloseClick }) {
+  constructor({ point, allDestinations, destination, allOffers, offers, selectedOffers, onFormSubmit, onCloseClick }) {
     super();
     this.#allDestinations = allDestinations;
+    this.#allOffers = allOffers;
     this._setState(EditFormView.parsePointToState(point, destination, offers, selectedOffers));
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
@@ -131,6 +133,8 @@ export default class EditFormView extends AbstractStatefulView {
     this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
+    this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
   }
 
   #typeChangeHandler = (evt) => {
@@ -143,6 +147,26 @@ export default class EditFormView extends AbstractStatefulView {
         ...this._state.point,
         type: evt.target.value,
         offers: [],
+      },
+      pointOffers: this.#allOffers.find((item) => item.type === evt.target.value).offers,
+    });
+  };
+
+  #destinationChangeHandler = (evt) => {
+    this.updateElement({
+      pointDestination: this.#allDestinations.find((item) => item.name === evt.target.value),
+      point: {
+        ...this._state.point,
+        destination: this.#allDestinations.find((item) => item.name === evt.target.value).id,
+      }
+    });
+  };
+
+  #priceInputHandler = (evt) => {
+    this._setState({
+      point: {
+        ...this._state.point,
+        basePrice: evt.target.value,
       }
     });
   };
