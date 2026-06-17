@@ -90,6 +90,7 @@ export default class PointPresenter {
   #escKeyDownHandler = (evt) => {
     if (evt.key === 'Escape') {
       evt.preventDefault();
+      this.#editFormComponent.reset(this.#point, this.#destination, this.#offers, this.#selectedOffers);
       this.#replaceEditFormToPoint();
       document.removeEventListener('keydown', this.#escKeyDownHandler);
     }
@@ -103,6 +104,7 @@ export default class PointPresenter {
   };
 
   #replaceEditFormToPoint = () => {
+    this.#editFormComponent.reset(this.#point, this.#destination, this.#offers, this.#selectedOffers);
     replace(this.#pointComponent, this.#editFormComponent);
     document.removeEventListener('keydown', this.#escKeyDownHandler);
     this.#mode = Mode.DEFAULT;

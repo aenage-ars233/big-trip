@@ -181,6 +181,12 @@ export default class EditFormView extends AbstractStatefulView {
     this.#handleCloseClick();
   };
 
+  reset(point, destination, offers, selectedOffers) {
+    this.updateElement(
+      EditFormView.parsePointToState(point, destination, offers, selectedOffers),
+    );
+  }
+
   static parsePointToState(point, destination, offers, selectedOffers) {
     return {
       point: structuredClone(point),
