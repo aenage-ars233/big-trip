@@ -23,10 +23,10 @@ function createOffersTemplate(offers, checkedOffers) {
   ) : '';
 }
 
-function createEditFormTemplate(point, allDestinations, destination, offers, checkedOffers) {
-  const { type, basePrice, dateFrom, dateTo } = point;
-  const formattedDateFrom = humanizePointDate(dateFrom, 'DD/MM/YY HH:mm');
-  const formattedDateTo = humanizePointDate(dateTo, 'DD/MM/YY HH:mm');
+function createEditFormTemplate(state, allDestinations) {
+  const { point, pointDestination, pointOffers, pointSelectedOffers } = state;
+  const formattedDateFrom = humanizePointDate(point.dateFrom, 'DD/MM/YY HH:mm');
+  const formattedDateTo = humanizePointDate(point.dateTo, 'DD/MM/YY HH:mm');
 
   return (
     `<li class="trip-events__item">
@@ -35,7 +35,7 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
           <div class="event__type-wrapper">
             <label class="event__type  event__type-btn" for="event-type-toggle-1">
               <span class="visually-hidden">Choose event type</span>
-              <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
+              <img class="event__type-icon" width="17" height="17" src="img/icons/${point.type}.png" alt="Event type icon">
             </label>
             <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
 
@@ -45,7 +45,7 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
 
               ${POINT_TYPES.map((pointType) => `
                 <div class="event__type-item">
-                    <input id="event-type-${pointType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType.toLowerCase()}" ${pointType.toLowerCase() === type ? 'checked' : ''}>
+                    <input id="event-type-${pointType.toLowerCase()}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType.toLowerCase()}" ${pointType.toLowerCase() === point.type ? 'checked' : ''}>
                     <label class="event__type-label  event__type-label--${pointType.toLowerCase()}" for="event-type-${pointType.toLowerCase()}-1">${pointType}</label>
                   </div>
               `).join('')}
@@ -55,9 +55,9 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
 
           <div class="event__field-group  event__field-group--destination">
             <label class="event__label  event__type-output" for="event-destination-1">
-              ${type}
+              ${point.type}
             </label>
-            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.name}" list="destination-list-1">
+            <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${pointDestination.name}" list="destination-list-1">
             <datalist id="destination-list-1">
               ${allDestinations.map(({ name }) => `<option value="${name}"></option>`).join('')}
             </datalist>
@@ -76,7 +76,7 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
+            <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${point.basePrice}">
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -86,15 +86,15 @@ function createEditFormTemplate(point, allDestinations, destination, offers, che
           </button>
         </header>
         <section class="event__details">
-          ${createOffersTemplate(offers, checkedOffers)}
+          ${createOffersTemplate(pointOffers, pointSelectedOffers)}
 
           <section class="event__section  event__section--destination">
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-            <p class="event__destination-description">${destination.description}</p>
+            <p class="event__destination-description">${pointDestination.description}</p>
 
             <div class="event__photos-container">
               <div class="event__photos-tape">
-                ${destination.pictures.map(({ src, description }) => `<img class="event__photo" src="${src}" alt="${description}">`).join('')}
+                ${pointDestination.pictures.map(({ src, description }) => `<img class="event__photo" src="${src}" alt="${description}">`).join('')}
               </div>
             </div>
           </section>
@@ -115,29 +115,62 @@ export default class EditFormView extends AbstractStatefulView {
 
   constructor({ point, allDestinations, destination, offers, selectedOffers, onFormSubmit, onCloseClick }) {
     super();
-    this.#point = point;
     this.#allDestinations = allDestinations;
-    this.#destination = destination;
-    this.#offers = offers;
-    this.#checkedOffers = selectedOffers;
+    this._setState(EditFormView.parsePointToState(point, destination, offers, selectedOffers));
     this.#handleFormSubmit = onFormSubmit;
     this.#handleCloseClick = onCloseClick;
 
-    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
+    this._restoreHandlers();
   }
 
   get template() {
-    return createEditFormTemplate(this.#point, this.#allDestinations, this.#destination, this.#offers, this.#checkedOffers);
+    return createEditFormTemplate(this._state, this.#allDestinations);
   }
+
+  _restoreHandlers() {
+    this.element.querySelector('form').addEventListener('submit', this.#formSubmitHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#closeClickHandler);
+    this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
+  }
+
+  #typeChangeHandler = (evt) => {
+    if (!evt.target.tagname === 'INPUT') {
+      return null;
+    }
+
+    this.updateElement({
+      point: {
+        ...this._state.point,
+        type: evt.target.value,
+        offers: [],
+      }
+    });
+  };
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit(this.#point, this.#allDestinations, this.#destination, this.#offers, this.#checkedOffers);
+    this.#handleFormSubmit(EditFormView.parseStateToPoint(this._state));
   };
 
   #closeClickHandler = (evt) => {
     evt.preventDefault();
     this.#handleCloseClick();
   };
+
+  static parsePointToState(point, destination, offers, selectedOffers) {
+    return {
+      point: structuredClone(point),
+      pointDestination: structuredClone(destination),
+      pointOffers: structuredClone(offers),
+      pointSelectedOffers: structuredClone(selectedOffers),
+    };
+  }
+
+  static parseStateToPoint(state) {
+    return {
+      point: state.point,
+      destination: state.pointDestination,
+      selectedOffers: state.pointSelectedOffers
+    };
+  }
 }
