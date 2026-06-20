@@ -41,4 +41,16 @@ const NoPointsText = {
   [FilterType.PAST]: 'There are no past events now',
 };
 
-export {POINT_COUNT, POINT_TYPES, FilterType, SortType, NoPointsText};
+const UserAction = {
+  UPDATE_POINT: 'UPDATE_POINT',
+  ADD_POINT: 'ADD_POINT',
+  DELETE_POINT: 'DELETE_POINT',
+};
+
+const UpdateType = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+export {POINT_COUNT, POINT_TYPES, FilterType, SortType, NoPointsText, UserAction, UpdateType};

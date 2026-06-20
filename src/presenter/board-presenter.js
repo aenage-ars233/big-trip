@@ -31,6 +31,17 @@ export default class BoardPresenter {
     this.#allOffers = this.#pointModel.offers;
   }
 
+  get points() {
+    switch (this.#currentSortType) {
+      case SortType.PRICE:
+        return [...this.#pointModel.points].sort(sortPointsByPrice);
+      case SortType.TIME:
+        return [...this.#pointModel.points].sort(sortPointsByTime);
+    }
+
+    return this.#pointModel.points.sort(sortPointsByDate);
+  }
+
   init() {
     this.#boardPoints = [...this.#pointModel.points];
     this.#sourcedBoardPoints = [...this.#pointModel.points];
