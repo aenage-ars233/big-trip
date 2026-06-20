@@ -55,7 +55,7 @@ export default class PointPresenter {
       allOffers: this.#allOffers,
       offers: this.#offers,
       selectedOffers: this.#selectedOffers,
-      onFormSubmit: this.#replaceEditFormToPoint,
+      onFormSubmit: this.#handleEditFormSubmit,
       onCloseClick: this.#replaceEditFormToPoint
     });
 
@@ -112,5 +112,10 @@ export default class PointPresenter {
 
   #handleFavoriteClick = () => {
     this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite });
+  };
+
+  #handleEditFormSubmit = (updatedPoint) => {
+    this.#replaceEditFormToPoint();
+    this.#handleDataChange(updatedPoint);
   };
 }

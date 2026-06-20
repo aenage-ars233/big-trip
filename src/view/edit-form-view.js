@@ -276,10 +276,6 @@ export default class EditFormView extends AbstractStatefulView {
   }
 
   static parseStateToPoint(state) {
-    return {
-      point: state.point,
-      destination: state.pointDestination,
-      selectedOffers: state.pointSelectedOffers
-    };
+    return state.point;
   }
 }
