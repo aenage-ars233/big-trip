@@ -111,6 +111,6 @@ export default class PointPresenter {
   };
 
   #handleFavoriteClick = () => {
-    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite }, this.#destination, this.#allDestinations, this.#allOffers, this.#offers, this.#selectedOffers);
+    this.#handleDataChange({...this.#point, isFavorite: !this.#point.isFavorite }, this.#destination, this.#offers, this.#selectedOffers);
   };
 }

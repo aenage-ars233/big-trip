@@ -12,6 +12,8 @@ export default class BoardPresenter {
   #pointModel;
   #boardPoints = [];
   #sourcedBoardPoints = [];
+  #allDestinations = [];
+  #allOffers = [];
 
   #container;
   #eventsListComponent = new EventsListView();
@@ -25,6 +27,8 @@ export default class BoardPresenter {
   constructor({ container, pointModel }) {
     this.#container = container;
     this.#pointModel = pointModel;
+    this.#allDestinations = this.#pointModel.destinations;
+    this.#allOffers = this.#pointModel.offers;
   }
 
   init() {
@@ -34,21 +38,21 @@ export default class BoardPresenter {
     this.#renderBoard();
   }
 
-  #renderPoint(point, destination, allDestinations, allOffers, offers, selectedOffers) {
+  #renderPoint(point, destination, offers, selectedOffers) {
     const pointPresenter = new PointPresenter({
       pointListContainer: this.#eventsListComponent.element,
       onDataChange: this.#handlePointChange,
       onModeChange: this.#handleModeChange,
     });
 
-    pointPresenter.init(point, destination, allDestinations, allOffers, offers, selectedOffers);
+    pointPresenter.init(point, destination, this.#allDestinations, this.#allOffers, offers, selectedOffers);
     this.#pointPresenters.set(point.id, pointPresenter);
   }
 
-  #handlePointChange = (updatedPoint, updatedDestination, allDestinations, allOffers, updatedOffers, updatedSelectedOffers) => {
+  #handlePointChange = (updatedPoint, updatedDestination, updatedOffers, updatedSelectedOffers) => {
     this.#boardPoints = updateItem(this.#boardPoints, updatedPoint);
     this.#sourcedBoardPoints = updateItem(this.#sourcedBoardPoints, updatedPoint);
-    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, allDestinations, allOffers, updatedOffers, updatedSelectedOffers);
+    this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, this.#allDestinations, this.#allOffers, updatedOffers, updatedSelectedOffers);
   };
 
   #handleModeChange = () => {
@@ -98,13 +102,11 @@ export default class BoardPresenter {
 
     for (let i = 0; i < this.#boardPoints.length; i++) {
       const currentPoint = this.#boardPoints[i];
-      const allDestinations = this.#pointModel.destinations;
       const currentPointDestination = this.#pointModel.getDestinationById(currentPoint.destination);
-      const allOffers = this.#pointModel.offers;
       const allOffersByType = this.#pointModel.getOffersByType(currentPoint.type);
       const currentPointSelectedOffers = currentPoint.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
 
-      this.#renderPoint(currentPoint, currentPointDestination, allDestinations, allOffers, allOffersByType, currentPointSelectedOffers);
+      this.#renderPoint(currentPoint, currentPointDestination, allOffersByType, currentPointSelectedOffers);
     }
   }
 
