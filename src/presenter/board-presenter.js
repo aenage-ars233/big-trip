@@ -49,9 +49,13 @@ export default class BoardPresenter {
     this.#pointPresenters.set(point.id, pointPresenter);
   }
 
-  #handlePointChange = (updatedPoint, updatedDestination, updatedOffers, updatedSelectedOffers) => {
+  #handlePointChange = (updatedPoint) => {
     this.#boardPoints = updateItem(this.#boardPoints, updatedPoint);
     this.#sourcedBoardPoints = updateItem(this.#sourcedBoardPoints, updatedPoint);
+    const updatedDestination = this.#pointModel.getDestinationById(updatedPoint.destination);
+    const updatedOffers = this.#pointModel.getOffersByType(updatedPoint.type);
+    const updatedSelectedOffers = updatedPoint.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
+
     this.#pointPresenters.get(updatedPoint.id).init(updatedPoint, updatedDestination, this.#allDestinations, this.#allOffers, updatedOffers, updatedSelectedOffers);
   };
 
