@@ -12,8 +12,8 @@ function createOffersTemplate(offers, checkedOffers) {
        <div class="event__available-offers">
         ${offers.map(({ id, title, price }) => (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="event-offer-${id}" type="checkbox" name="event-offer-${title}" ${checkedOffers.some((offer) => offer.id === id) ? 'checked' : ''}>
-        <label class="event__offer-label" for="event-offer-${id}">
+        <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${title}" ${checkedOffers.some((offer) => offer.id === id) ? 'checked' : ''}>
+        <label class="event__offer-label" for="${id}">
           <span class="event__offer-title">${title}</span>
           &plus;&euro;&nbsp;
           <span class="event__offer-price">${price}</span>
@@ -141,6 +141,7 @@ export default class EditFormView extends AbstractStatefulView {
     this.element.querySelector('.event__type-group').addEventListener('change', this.#typeChangeHandler);
     this.element.querySelector('.event__input--destination').addEventListener('change', this.#destinationChangeHandler);
     this.element.querySelector('.event__input--price').addEventListener('input', this.#priceInputHandler);
+    this.element.querySelector('.event__details').addEventListener('change', this.#offerChangeHandler);
 
     this.#setDatePickers();
   }
@@ -157,6 +158,7 @@ export default class EditFormView extends AbstractStatefulView {
         offers: [],
       },
       pointOffers: this.#allOffers.find((item) => item.type === evt.target.value).offers,
+      pointSelectedOffers: [],
     });
   };
 
@@ -195,6 +197,31 @@ export default class EditFormView extends AbstractStatefulView {
         basePrice: evt.target.value,
       }
     });
+  };
+
+  #offerChangeHandler = (evt) => {
+    if (evt.target.tagName !== 'INPUT') {
+      return null;
+    }
+
+    if (evt.target.checked) {
+      this._setState({
+        point: {
+          ...this._state.point,
+          offers: [
+            ...this._state.point.offers,
+            evt.target.id,
+          ],
+        }
+      });
+    } else {
+      this._setState({
+        point: {
+          ...this._state.point,
+          offers: this._state.point.offers.filter((item) => item !== evt.target.id),
+        }
+      });
+    }
   };
 
   #setDatePickers() {
