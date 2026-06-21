@@ -1,4 +1,5 @@
 import {sortPointsByDate, sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
+import {filter} from '../utils/filter.js';
 import {SortType, UserAction, UpdateType} from '../const.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
@@ -9,6 +10,7 @@ import PointPresenter from './point-presenter.js';
 
 export default class BoardPresenter {
   #pointModel;
+  #filterModel;
   #allDestinations = [];
   #allOffers = [];
 
@@ -21,24 +23,30 @@ export default class BoardPresenter {
   #pointPresenters = new Map();
   #currentSortType = SortType.DEFAULT;
 
-  constructor({ container, pointModel }) {
+  constructor({ container, pointModel, filterModel }) {
     this.#container = container;
     this.#pointModel = pointModel;
+    this.#filterModel = filterModel;
     this.#allDestinations = this.#pointModel.destinations;
     this.#allOffers = this.#pointModel.offers;
 
     this.#pointModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
   }
 
   get points() {
+    const filterType = this.#filterModel.filter;
+    const points = this.#pointModel.points;
+    const filteredPoints = filter[filterType](points);
+
     switch (this.#currentSortType) {
       case SortType.PRICE:
-        return [...this.#pointModel.points].sort(sortPointsByPrice);
+        return filteredPoints.sort(sortPointsByPrice);
       case SortType.TIME:
-        return [...this.#pointModel.points].sort(sortPointsByTime);
+        return filteredPoints.sort(sortPointsByTime);
     }
 
-    return this.#pointModel.points.sort(sortPointsByDate);
+    return filteredPoints.sort(sortPointsByDate);
   }
 
   init() {
@@ -72,7 +80,7 @@ export default class BoardPresenter {
   #handleModelEvent = (updateType, data) => {
     const updatedDestination = data ? this.#pointModel.getDestinationById(data.destination) : null;
     const updatedOffers = data ? this.#pointModel.getOffersByType(data.type) : null;
-    const updatedSelectedOffers = data ? data.offers.map((offerId) => this.#pointModel.getOfferById(offerId)) : null;
+    const updatedSelectedOffers = data && data.offers ? data.offers.map((offerId) => this.#pointModel.getOfferById(offerId)) : null;
 
     switch (updateType) {
       case UpdateType.PATCH:
