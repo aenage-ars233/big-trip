@@ -12,7 +12,7 @@ function createOffersTemplate(offers, checkedOffers) {
        <div class="event__available-offers">
         ${offers.map(({ id, title, price }) => (
       `<div class="event__offer-selector">
-        <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${title}" ${checkedOffers.some((offer) => offer.id === id) ? 'checked' : ''}>
+        <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${title}" ${checkedOffers.some((offer) => offer.id === id) ? 'checked' : ''} data-offer-title="${title}" data-offer-price="${price}">
         <label class="event__offer-label" for="${id}">
           <span class="event__offer-title">${title}</span>
           &plus;&euro;&nbsp;
@@ -212,14 +212,23 @@ export default class EditFormView extends AbstractStatefulView {
             ...this._state.point.offers,
             evt.target.id,
           ],
-        }
+        },
+        pointSelectedOffers: [
+          ...this._state.pointSelectedOffers,
+          {
+            id: evt.target.id,
+            title: evt.target.dataset.offerTitle,
+            price: evt.target.dataset.offerPrice,
+          }
+        ],
       });
     } else {
       this._setState({
         point: {
           ...this._state.point,
           offers: this._state.point.offers.filter((item) => item !== evt.target.id),
-        }
+        },
+        pointSelectedOffers: this._state.pointSelectedOffers.filter((item) => item.id !== evt.target.id),
       });
     }
   };
