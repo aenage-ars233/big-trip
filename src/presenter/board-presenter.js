@@ -57,8 +57,6 @@ export default class BoardPresenter {
   }
 
   #handleViewAction = (actionType, updateType, update) => {
-    //console.log(actionType, updateType, update);
-
     switch (actionType) {
       case UserAction.UPDATE_POINT:
         this.#pointModel.updatePoint(updateType, update);
@@ -72,10 +70,9 @@ export default class BoardPresenter {
   };
 
   #handleModelEvent = (updateType, data) => {
-    //console.log(updateType, data);
-    const updatedDestination = this.#pointModel.getDestinationById(data.destination);
-    const updatedOffers = this.#pointModel.getOffersByType(data.type);
-    const updatedSelectedOffers = data.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
+    const updatedDestination = data ? this.#pointModel.getDestinationById(data.destination) : null;
+    const updatedOffers = data ? this.#pointModel.getOffersByType(data.type) : null;
+    const updatedSelectedOffers = data ? data.offers.map((offerId) => this.#pointModel.getOfferById(offerId)) : null;
 
     switch (updateType) {
       case UpdateType.PATCH:
