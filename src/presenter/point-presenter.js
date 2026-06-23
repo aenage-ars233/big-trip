@@ -71,7 +71,8 @@ export default class PointPresenter {
     }
 
     if (this.#mode === Mode.EDITING) {
-      replace(this.#editFormComponent, prevEditFormComponent);
+      replace(this.#pointComponent, prevEditFormComponent);
+      this.#mode = Mode.DEFAULT;
     }
 
     remove(prevPointComponent);
@@ -86,6 +87,24 @@ export default class PointPresenter {
   resetView() {
     if (this.#mode !== Mode.DEFAULT) {
       this.#replaceEditFormToPoint();
+    }
+  }
+
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editFormComponent.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editFormComponent.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
     }
   }
 
@@ -126,7 +145,6 @@ export default class PointPresenter {
       UpdateType.MINOR,
       updatedPoint
     );
-    this.#replaceEditFormToPoint();
   };
 
   #handleDeleteClick = (point) => {
