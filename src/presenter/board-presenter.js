@@ -1,6 +1,7 @@
 import {sortPointsByDate, sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
 import {filter} from '../utils/filter.js';
 import {SortType, FilterType, UserAction, UpdateType, BLANK_POINT} from '../const.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import NoPointsView from '../view/no-points-view.js';
@@ -8,6 +9,11 @@ import LoadingView from '../view/loading-view.js';
 import {render, remove} from '../framework/render.js';
 import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 1000,
+};
 
 export default class BoardPresenter {
   #pointModel;
@@ -27,6 +33,10 @@ export default class BoardPresenter {
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
   #isLoading = true;
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT,
+  });
 
   constructor({ container, pointModel, filterModel, onNewPointDestroy }) {
     this.#container = container;
@@ -77,6 +87,8 @@ export default class BoardPresenter {
   }
 
   #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
     switch (actionType) {
       case UserAction.UPDATE_POINT:
         this.#pointPresenters.get(update.id).setSaving();
@@ -103,6 +115,8 @@ export default class BoardPresenter {
         }
         break;
     }
+
+    this.#uiBlocker.unblock();
   };
 
   #handleModelEvent = (updateType, data) => {
