@@ -121,12 +121,12 @@ export default class PointPresenter {
   };
 
   #handleEditFormSubmit = (updatedPoint) => {
-    this.#replaceEditFormToPoint();
     this.#handleDataChange(
       UserAction.UPDATE_POINT,
       UpdateType.MINOR,
       updatedPoint
     );
+    this.#replaceEditFormToPoint();
   };
 
   #handleDeleteClick = (point) => {
