@@ -1,11 +1,11 @@
 import {sortPointsByDate, sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
 import {filter} from '../utils/filter.js';
-import {SortType, FilterType, UserAction, UpdateType} from '../const.js';
+import {SortType, FilterType, UserAction, UpdateType, BLANK_POINT} from '../const.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
-import NewPointFormView from '../view/new-point-form-view.js';
 import NoPointsView from '../view/no-points-view.js';
 import {render, remove} from '../framework/render.js';
+import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
 
 export default class BoardPresenter {
@@ -16,20 +16,31 @@ export default class BoardPresenter {
 
   #container;
   #eventsListComponent = new EventsListView();
-  #newPointFormComponent = new NewPointFormView();
   #sortComponent = null;
   #noPointsComponent = null;
 
+  #newPointPresenter = null;
   #pointPresenters = new Map();
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
 
-  constructor({ container, pointModel, filterModel }) {
+  constructor({ container, pointModel, filterModel, onNewPointDestroy }) {
     this.#container = container;
     this.#pointModel = pointModel;
     this.#filterModel = filterModel;
     this.#allDestinations = this.#pointModel.destinations;
     this.#allOffers = this.#pointModel.offers;
+
+    this.#newPointPresenter = new NewPointPresenter({
+      pointsListContainer: this.#eventsListComponent.element,
+      point: BLANK_POINT,
+      allDestinations: this.#allDestinations,
+      destination: this.#pointModel.getDestinationById(BLANK_POINT.destination),
+      allOffers: this.#allOffers,
+      offers: this.#pointModel.getOffersByType(BLANK_POINT.type),
+      onDataChange: this.#handleViewAction,
+      onDestroy: onNewPointDestroy,
+    });
 
     this.#pointModel.addObserver(this.#handleModelEvent);
     this.#filterModel.addObserver(this.#handleModelEvent);
@@ -52,6 +63,12 @@ export default class BoardPresenter {
 
   init() {
     this.#renderBoard();
+  }
+
+  createPoint() {
+    this.#currentSortType = SortType.DEFAULT;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newPointPresenter.init();
   }
 
   #renderPoint(point, destination, offers, selectedOffers) {
@@ -99,6 +116,7 @@ export default class BoardPresenter {
   };
 
   #handleModeChange = () => {
+    this.#newPointPresenter.destroy();
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
   };
 
@@ -141,6 +159,7 @@ export default class BoardPresenter {
   }
 
   #clearBoard({ resetSortType = false } = {}) {
+    this.#newPointPresenter.destroy();
     this.#pointPresenters.forEach((presenter) => presenter.destroy());
     this.#pointPresenters.clear();
 

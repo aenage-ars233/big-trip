@@ -1,3 +1,13 @@
+const BLANK_POINT = {
+  basePrice: 0,
+  dateFrom: '',
+  dateTo: '',
+  destination: '',
+  isFavorite: false,
+  offers: [],
+  type: 'flight',
+};
+
 /**
  * Количество точек маршрута, генерируемое при загрузке страницы
  * @type {number}
@@ -53,4 +63,4 @@ const UpdateType = {
   MAJOR: 'MAJOR',
 };
 
-export {POINT_COUNT, POINT_TYPES, FilterType, SortType, NoPointsText, UserAction, UpdateType};
+export {BLANK_POINT, POINT_COUNT, POINT_TYPES, FilterType, SortType, NoPointsText, UserAction, UpdateType};
