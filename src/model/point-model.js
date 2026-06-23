@@ -1,22 +1,32 @@
 import Observable from '../framework/observable.js';
-import {POINT_COUNT} from '../const.js';
-import {destinations} from '../mocks/destinations.js';
-import {offers} from '../mocks/offers.js';
-import {getRandomPoint} from '../mocks/points.js';
+import {UpdateType} from '../const.js';
 
 export default class PointModel extends Observable {
   #pointsApiService = null;
-  #points = Array.from({length: POINT_COUNT}, getRandomPoint);
-  #destinations = destinations;
-  #offers = offers;
+  #points = [];
+  #destinations = [];
+  #offers = [];
 
   constructor({pointsApiService}) {
     super();
     this.#pointsApiService = pointsApiService;
+  }
 
-    this.#pointsApiService.points.then((points) => {
-      console.log(points.map(this.#adaptToClient));
-    });
+  async init() {
+    try {
+      const points = await this.#pointsApiService.points;
+      const destinations = await this.#pointsApiService.destinations;
+      const offers = await this.#pointsApiService.offers;
+      this.#points = points.map(this.#adaptToClient);
+      this.#destinations = destinations;
+      this.#offers = offers;
+    } catch(err) {
+      this.#points = [];
+      this.#destinations = [];
+      this.#offers = [];
+    }
+
+    this._notify(UpdateType.INIT);
   }
 
   get points() {

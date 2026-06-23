@@ -45,3 +45,4 @@ render(newPointButtonComponent, headerContainer);
 
 filterPresenter.init();
 boardPresenter.init();
+pointModel.init();

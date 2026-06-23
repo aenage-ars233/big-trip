@@ -9,11 +9,6 @@ const BLANK_POINT = {
 };
 
 /**
- * Количество точек маршрута, генерируемое при загрузке страницы
- * @type {number}
- */
-const POINT_COUNT = 6;
-/**
  * Типы точек маршрута
  * @type {Array<string>}
  */
@@ -61,6 +56,7 @@ const UpdateType = {
   PATCH: 'PATCH',
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
+  INIT: 'INIT',
 };
 
-export {BLANK_POINT, POINT_COUNT, POINT_TYPES, FilterType, SortType, NoPointsText, UserAction, UpdateType};
+export {BLANK_POINT, POINT_TYPES, FilterType, SortType, NoPointsText, UserAction, UpdateType};
