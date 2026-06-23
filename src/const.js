@@ -57,6 +57,7 @@ const UpdateType = {
   MINOR: 'MINOR',
   MAJOR: 'MAJOR',
   INIT: 'INIT',
+  FAIL: 'FAIL',
 };
 
 export {BLANK_POINT, POINT_TYPES, FilterType, SortType, NoPointsText, UserAction, UpdateType};

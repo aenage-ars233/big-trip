@@ -6,6 +6,7 @@ import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
 import NoPointsView from '../view/no-points-view.js';
 import LoadingView from '../view/loading-view.js';
+import FailedLoadDataView from '../view/failed-load-data-view.js';
 import {render, remove} from '../framework/render.js';
 import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
@@ -26,6 +27,7 @@ export default class BoardPresenter {
   #sortComponent = null;
   #noPointsComponent = null;
   #loadingComponent = new LoadingView();
+  #failedLoadComponent = new FailedLoadDataView();
 
   #newPointPresenter = null;
   #newPointDestroyHandler;
@@ -33,6 +35,7 @@ export default class BoardPresenter {
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
   #isLoading = true;
+  #isFailed = false;
   #uiBlocker = new UiBlocker({
     lowerLimit: TimeLimit.LOWER_LIMIT,
     upperLimit: TimeLimit.UPPER_LIMIT,
@@ -153,6 +156,11 @@ export default class BoardPresenter {
         });
         this.#renderBoard();
         break;
+      case UpdateType.FAIL:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#isFailed = true;
+        this.#renderBoard();
     }
   };
 
@@ -173,6 +181,10 @@ export default class BoardPresenter {
 
   #renderLoading() {
     render(this.#loadingComponent, this.#container);
+  }
+
+  #renderFailedLoadData() {
+    render(this.#failedLoadComponent, this.#container);
   }
 
   #renderSort() {
@@ -223,6 +235,11 @@ export default class BoardPresenter {
   #renderBoard() {
     if (this.#isLoading) {
       this.#renderLoading();
+      return null;
+    }
+
+    if (this.#isFailed) {
+      this.#renderFailedLoadData();
       return null;
     }
 
