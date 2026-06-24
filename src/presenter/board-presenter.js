@@ -12,7 +12,7 @@ import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
 
 const TimeLimit = {
-  LOWER_LIMIT: 350,
+  LOWER_LIMIT: 250,
   UPPER_LIMIT: 1000,
 };
 
@@ -75,8 +75,28 @@ export default class BoardPresenter {
   createPoint() {
     this.#currentSortType = SortType.DEFAULT;
     this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+
+    if (this.#noPointsComponent !== null) {
+      remove(this.#noPointsComponent);
+      this.#noPointsComponent = null;
+    }
+
+    if (!this.#eventsListComponent.element.isConnected) {
+      this.#renderPointsList();
+      this.#createNewPointPresenter();
+    }
+
     this.#newPointPresenter.init();
   }
+
+  #handleNewPointFormDestroy = () => {
+    this.#newPointDestroyHandler();
+
+    if (this.points.length === 0) {
+      remove(this.#eventsListComponent);
+      this.#renderNoPoints();
+    }
+  };
 
   #renderPoint(point, destination, offers, selectedOffers) {
     const pointPresenter = new PointPresenter({
@@ -144,16 +164,7 @@ export default class BoardPresenter {
         this.#allOffers = this.#pointModel.offers;
         this.#isLoading = false;
         remove(this.#loadingComponent);
-        this.#newPointPresenter = new NewPointPresenter({
-          pointsListContainer: this.#eventsListComponent.element,
-          point: BLANK_POINT,
-          allDestinations: this.#allDestinations,
-          destination: this.#pointModel.getDestinationById(BLANK_POINT.destination),
-          allOffers: this.#allOffers,
-          offers: this.#pointModel.getOffersByType(BLANK_POINT.type),
-          onDataChange: this.#handleViewAction,
-          onDestroy: this.#newPointDestroyHandler,
-        });
+        this.#createNewPointPresenter();
         this.#renderBoard();
         break;
       case UpdateType.FAIL:
@@ -213,6 +224,19 @@ export default class BoardPresenter {
     this.#noPointsComponent = new NoPointsView(this.#filterType);
 
     render(this.#noPointsComponent, this.#container);
+  }
+
+  #createNewPointPresenter() {
+    this.#newPointPresenter = new NewPointPresenter({
+      pointsListContainer: this.#eventsListComponent.element,
+      point: BLANK_POINT,
+      allDestinations: this.#allDestinations,
+      destination: this.#pointModel.getDestinationById(BLANK_POINT.destination),
+      allOffers: this.#allOffers,
+      offers: this.#pointModel.getOffersByType(BLANK_POINT.type),
+      onDataChange: this.#handleViewAction,
+      onDestroy: this.#handleNewPointFormDestroy,
+    });
   }
 
   #clearBoard({ resetSortType = false } = {}) {

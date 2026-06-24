@@ -1,0 +1,6 @@
+POST /points HTTP/1.1
+Host: 22.objects.htmlacademy.pro/big-trip
+Authorization: Basic hS3sfS45wcl1sa2j
+Content-Type: application/json
+
+{"destination":"14990c2c-bc06-445f-905a-1479c8033013","offers":[],"type":"taxi","base_price":5400,"date_from":"2026-06-01T16:57:00.000Z","date_to":"2026-06-02T16:57:00.000Z","is_favorite":false}
