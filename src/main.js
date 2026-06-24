@@ -7,7 +7,7 @@ import BoardPresenter from './presenter/board-presenter.js';
 import PointModel from './model/point-model.js';
 import { render } from './framework/render.js';
 
-const AUTHORIZATION = 'Basic hS3sfS45wcl1sa2f';
+const AUTHORIZATION = 'Basic hS3sfS45wcl1sa2j';
 const END_POINT = 'https://22.objects.htmlacademy.pro/big-trip';
 
 const filterModel = new FilterModel();

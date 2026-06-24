@@ -1,7 +1,8 @@
 import {render, replace, remove, RenderPosition} from '../framework/render.js';
 import TripInfoView from '../view/trip-info-view.js';
-import {humanizePointDate} from '../utils/point.js';
-import {UpdateType} from '../const.js';
+import {humanizePointDate, sortPointsByDate} from '../utils/point.js';
+import {filter} from '../utils/filter.js';
+import {UpdateType, FilterType} from '../const.js';
 
 export default class TripInfoPresenter {
   #container = null;
@@ -16,7 +17,7 @@ export default class TripInfoPresenter {
   }
 
   init() {
-    const points = this.#pointModel.points;
+    const points = filter[FilterType.EVERYTHING](this.#pointModel.points).sort(sortPointsByDate);
     const prevTripInfoComponent = this.#tripInfoComponent;
 
     this.#tripInfoComponent = new TripInfoView({
@@ -70,8 +71,10 @@ export default class TripInfoPresenter {
   }
 
   #handleModelEvent = (updateType) => {
-    if (updateType === UpdateType.FAIL) {
+    if (updateType === UpdateType.FAIL || this.#pointModel.points.length === 0) {
       remove(this.#tripInfoComponent);
+      this.#tripInfoComponent = null;
+      return null;
     }
 
     this.init();
