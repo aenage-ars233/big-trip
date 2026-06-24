@@ -12,7 +12,7 @@ import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
 
 const TimeLimit = {
-  LOWER_LIMIT: 350,
+  LOWER_LIMIT: 50,
   UPPER_LIMIT: 1000,
 };
 

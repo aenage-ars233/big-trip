@@ -87,7 +87,7 @@ function createEditFormTemplate(state, allDestinations) {
           <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>
             ${isDeleting ? 'Deleting...' : 'Delete'}
           </button>
-          <button class="event__rollup-btn" type="button" ${isDisabled ? 'disabled' : ''}>
+          <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>
         </header>
@@ -98,11 +98,11 @@ function createEditFormTemplate(state, allDestinations) {
             <h3 class="event__section-title  event__section-title--destination">Destination</h3>
             <p class="event__destination-description">${pointDestination.description}</p>
 
-            <div class="event__photos-container">
+            ${pointDestination.pictures.length ? `<div class="event__photos-container">
               <div class="event__photos-tape">
                 ${pointDestination.pictures.map(({ src, description }) => `<img class="event__photo" src="${src}" alt="${description}">`).join('')}
               </div>
-            </div>
+            </div>` : ''}
           </section>` : ''}
         </section>
       </form>

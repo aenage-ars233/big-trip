@@ -84,7 +84,7 @@ function createNewPointFormTemplate(state, allDestinations) {
             <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>
               ${isSaving ? 'Saving...' : 'Save'}
             </button>
-            <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>Cancel</button>
+            <button class="event__reset-btn" type="reset">Cancel</button>
           </header>
           <section class="event__details">
             ${createOffersTemplate(pointOffers, pointSelectedOffers, isDisabled)}
@@ -93,11 +93,11 @@ function createNewPointFormTemplate(state, allDestinations) {
               <h3 class="event__section-title  event__section-title--destination">Destination</h3>
               <p class="event__destination-description">${pointDestination.description}</p>
 
-              <div class="event__photos-container">
-                <div class="event__photos-tape">
-                  ${pointDestination.pictures.map(({ src, description }) => `<img class="event__photo" src="${src}" alt="${description}">`).join('')}
-                </div>
+              ${pointDestination.pictures.length ? `<div class="event__photos-container">
+              <div class="event__photos-tape">
+                ${pointDestination.pictures.map(({ src, description }) => `<img class="event__photo" src="${src}" alt="${description}">`).join('')}
               </div>
+            </div>` : ''}
             </section>` : ''}
           </section>
         </form>
