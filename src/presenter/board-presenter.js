@@ -100,72 +100,6 @@ export default class BoardPresenter {
     this.#pointPresenters.set(point.id, pointPresenter);
   }
 
-  #handleViewAction = async (actionType, updateType, update) => {
-    this.#uiBlocker.block();
-
-    switch (actionType) {
-      case UserAction.UPDATE_POINT:
-        this.#pointPresenters.get(update.id).setSaving();
-        try {
-          await this.#pointModel.updatePoint(updateType, update);
-        } catch(err) {
-          this.#pointPresenters.get(update.id).setAborting();
-        }
-        break;
-      case UserAction.ADD_POINT:
-        this.#newPointPresenter.setSaving();
-        try {
-          await this.#pointModel.addPoint(updateType, update);
-        } catch(err) {
-          this.#newPointPresenter.setAborting();
-        }
-        break;
-      case UserAction.DELETE_POINT:
-        this.#pointPresenters.get(update.id).setDeleting();
-        try {
-          await this.#pointModel.deletePoint(updateType, update);
-        } catch(err) {
-          this.#pointPresenters.get(update.id).setAborting();
-        }
-        break;
-    }
-
-    this.#uiBlocker.unblock();
-  };
-
-  #handleModelEvent = (updateType, data) => {
-    const updatedDestination = data ? this.#pointModel.getDestinationById(data.destination) : null;
-    const updatedOffers = data ? this.#pointModel.getOffersByType(data.type) : null;
-    const updatedSelectedOffers = data && data.offers ? data.offers.map((offerId) => this.#pointModel.getOfferById(offerId)) : null;
-
-    switch (updateType) {
-      case UpdateType.PATCH:
-        this.#pointPresenters.get(data.id).init(data, updatedDestination, this.#allDestinations, this.#allOffers, updatedOffers, updatedSelectedOffers);
-        break;
-      case UpdateType.MINOR:
-        this.#clearBoard();
-        this.#renderBoard();
-        break;
-      case UpdateType.MAJOR:
-        this.#clearBoard({resetSortType: true});
-        this.#renderBoard();
-        break;
-      case UpdateType.INIT:
-        this.#allDestinations = this.#pointModel.destinations;
-        this.#allOffers = this.#pointModel.offers;
-        this.#isLoading = false;
-        remove(this.#loadingComponent);
-        this.#createNewPointPresenter();
-        this.#renderBoard();
-        break;
-      case UpdateType.FAIL:
-        this.#isLoading = false;
-        remove(this.#loadingComponent);
-        this.#isFailed = true;
-        this.#renderBoard();
-    }
-  };
-
   #renderLoading() {
     render(this.#loadingComponent, this.#container);
   }
@@ -251,6 +185,72 @@ export default class BoardPresenter {
     this.#renderSort();
     this.#renderPointsList();
   }
+
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
+    switch (actionType) {
+      case UserAction.UPDATE_POINT:
+        this.#pointPresenters.get(update.id).setSaving();
+        try {
+          await this.#pointModel.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.get(update.id).setAborting();
+        }
+        break;
+      case UserAction.ADD_POINT:
+        this.#newPointPresenter.setSaving();
+        try {
+          await this.#pointModel.addPoint(updateType, update);
+        } catch(err) {
+          this.#newPointPresenter.setAborting();
+        }
+        break;
+      case UserAction.DELETE_POINT:
+        this.#pointPresenters.get(update.id).setDeleting();
+        try {
+          await this.#pointModel.deletePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.get(update.id).setAborting();
+        }
+        break;
+    }
+
+    this.#uiBlocker.unblock();
+  };
+
+  #handleModelEvent = (updateType, data) => {
+    const updatedDestination = data ? this.#pointModel.getDestinationById(data.destination) : null;
+    const updatedOffers = data ? this.#pointModel.getOffersByType(data.type) : null;
+    const updatedSelectedOffers = data && data.offers ? data.offers.map((offerId) => this.#pointModel.getOfferById(offerId)) : null;
+
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#pointPresenters.get(data.id).init(data, updatedDestination, this.#allDestinations, this.#allOffers, updatedOffers, updatedSelectedOffers);
+        break;
+      case UpdateType.MINOR:
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearBoard({resetSortType: true});
+        this.#renderBoard();
+        break;
+      case UpdateType.INIT:
+        this.#allDestinations = this.#pointModel.destinations;
+        this.#allOffers = this.#pointModel.offers;
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#createNewPointPresenter();
+        this.#renderBoard();
+        break;
+      case UpdateType.FAIL:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#isFailed = true;
+        this.#renderBoard();
+    }
+  };
 
   #handleNewPointFormDestroy = () => {
     this.#newPointDestroyHandler();
