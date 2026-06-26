@@ -1,43 +1,278 @@
+import {sortPointsByDate, sortPointsByPrice, sortPointsByTime} from '../utils/point.js';
+import {filter} from '../utils/filter.js';
+import {SortType, FilterType, UserAction, UpdateType, BLANK_POINT} from '../const.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import SortView from '../view/sort-view.js';
 import EventsListView from '../view/events-list-view.js';
-import NewPointFormView from '../view/new-point-form-view.js';
-import EditFormView from '../view/edit-form-view.js';
-import PointView from '../view/point-view.js';
-import {render} from '../render.js';
+import NoPointsView from '../view/no-points-view.js';
+import LoadingView from '../view/loading-view.js';
+import FailedLoadDataView from '../view/failed-load-data-view.js';
+import {render, remove} from '../framework/render.js';
+import NewPointPresenter from './new-point-presenter.js';
+import PointPresenter from './point-presenter.js';
+
+const TimeLimit = {
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 700,
+};
 
 export default class BoardPresenter {
-  sortComponent = new SortView();
-  eventsListComponent = new EventsListView();
-  newPointFormComponent = new NewPointFormView();
+  #pointModel;
+  #filterModel;
+  #allDestinations = [];
+  #allOffers = [];
 
-  constructor({ container, pointModel }) {
-    this.container = container;
-    this.pointModel = pointModel;
+  #container;
+  #eventsListComponent = new EventsListView();
+  #sortComponent = null;
+  #noPointsComponent = null;
+  #loadingComponent = new LoadingView();
+  #failedLoadComponent = new FailedLoadDataView();
+
+  #newPointPresenter = null;
+  #newPointDestroyHandler;
+  #pointPresenters = new Map();
+  #currentSortType = SortType.DEFAULT;
+  #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
+  #isFailed = false;
+  #uiBlocker = new UiBlocker({
+    lowerLimit: TimeLimit.LOWER_LIMIT,
+    upperLimit: TimeLimit.UPPER_LIMIT,
+  });
+
+  constructor({ container, pointModel, filterModel, onNewPointDestroy }) {
+    this.#container = container;
+    this.#pointModel = pointModel;
+    this.#filterModel = filterModel;
+    this.#allDestinations = this.#pointModel.destinations;
+    this.#allOffers = this.#pointModel.offers;
+    this.#newPointDestroyHandler = onNewPointDestroy;
+
+    this.#pointModel.addObserver(this.#handleModelEvent);
+    this.#filterModel.addObserver(this.#handleModelEvent);
+  }
+
+  get points() {
+    this.#filterType = this.#filterModel.filter;
+    const points = this.#pointModel.points;
+    const filteredPoints = filter[this.#filterType](points);
+
+    switch (this.#currentSortType) {
+      case SortType.PRICE:
+        return filteredPoints.sort(sortPointsByPrice);
+      case SortType.TIME:
+        return filteredPoints.sort(sortPointsByTime);
+    }
+
+    return filteredPoints.sort(sortPointsByDate);
   }
 
   init() {
-    this.boardPoints = [...this.pointModel.getPoints()];
+    this.#renderBoard();
+  }
 
-    render(this.sortComponent, this.container);
-    render(this.eventsListComponent, this.container);
-    render(new EditFormView({
-      point: this.boardPoints[0],
-      allDestinations: this.pointModel.getDestinations(),
-      destination: this.pointModel.getDestinationById(this.boardPoints[0].destination),
-      offers: this.pointModel.getOffersByType(this.boardPoints[0].type),
-      checkedOffers: this.boardPoints[0].offers.map((offerId) => this.pointModel.getOfferById(offerId))
-    }), this.eventsListComponent.getElement());
+  createPoint() {
+    this.#currentSortType = SortType.DEFAULT;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
 
-    for (let i = 0; i < this.boardPoints.length; i++) {
-      const currentPoint = this.boardPoints[i];
-      const currentPointDestination = this.pointModel.getDestinationById(currentPoint.destination);
-      const currentPointSelectedOffers = currentPoint.offers.map((offerId) => this.pointModel.getOfferById(offerId));
+    if (this.#noPointsComponent !== null) {
+      remove(this.#noPointsComponent);
+      this.#noPointsComponent = null;
+    }
 
-      render(new PointView({
-        point: currentPoint,
-        destination: currentPointDestination,
-        offers: currentPointSelectedOffers
-      }), this.eventsListComponent.getElement());
+    if (!this.#eventsListComponent.element.isConnected) {
+      this.#renderPointsList();
+      this.#createNewPointPresenter();
+    }
+
+    this.#newPointPresenter.init();
+  }
+
+  #renderPoint(point, destination, offers, selectedOffers) {
+    const pointPresenter = new PointPresenter({
+      pointListContainer: this.#eventsListComponent.element,
+      onDataChange: this.#handleViewAction,
+      onModeChange: this.#handleModeChange,
+    });
+
+    pointPresenter.init(point, destination, this.#allDestinations, this.#allOffers, offers, selectedOffers);
+    this.#pointPresenters.set(point.id, pointPresenter);
+  }
+
+  #handleViewAction = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+
+    switch (actionType) {
+      case UserAction.UPDATE_POINT:
+        this.#pointPresenters.get(update.id).setSaving();
+        try {
+          await this.#pointModel.updatePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.get(update.id).setAborting();
+        }
+        break;
+      case UserAction.ADD_POINT:
+        this.#newPointPresenter.setSaving();
+        try {
+          await this.#pointModel.addPoint(updateType, update);
+        } catch(err) {
+          this.#newPointPresenter.setAborting();
+        }
+        break;
+      case UserAction.DELETE_POINT:
+        this.#pointPresenters.get(update.id).setDeleting();
+        try {
+          await this.#pointModel.deletePoint(updateType, update);
+        } catch(err) {
+          this.#pointPresenters.get(update.id).setAborting();
+        }
+        break;
+    }
+
+    this.#uiBlocker.unblock();
+  };
+
+  #handleModelEvent = (updateType, data) => {
+    const updatedDestination = data ? this.#pointModel.getDestinationById(data.destination) : null;
+    const updatedOffers = data ? this.#pointModel.getOffersByType(data.type) : null;
+    const updatedSelectedOffers = data && data.offers ? data.offers.map((offerId) => this.#pointModel.getOfferById(offerId)) : null;
+
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#pointPresenters.get(data.id).init(data, updatedDestination, this.#allDestinations, this.#allOffers, updatedOffers, updatedSelectedOffers);
+        break;
+      case UpdateType.MINOR:
+        this.#clearBoard();
+        this.#renderBoard();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearBoard({resetSortType: true});
+        this.#renderBoard();
+        break;
+      case UpdateType.INIT:
+        this.#allDestinations = this.#pointModel.destinations;
+        this.#allOffers = this.#pointModel.offers;
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#createNewPointPresenter();
+        this.#renderBoard();
+        break;
+      case UpdateType.FAIL:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
+        this.#isFailed = true;
+        this.#renderBoard();
+    }
+  };
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#container);
+  }
+
+  #renderFailedLoadData() {
+    render(this.#failedLoadComponent, this.#container);
+  }
+
+  #renderSort() {
+    this.#sortComponent = new SortView({
+      currentSortType: this.#currentSortType,
+      onSortTypeChange: this.#handleSortTypeChange,
+    });
+
+    render(this.#sortComponent, this.#container);
+  }
+
+  #renderPointsList() {
+    render(this.#eventsListComponent, this.#container);
+
+    for (let i = 0; i < this.points.length; i++) {
+      const currentPoint = this.points[i];
+      const currentPointDestination = this.#pointModel.getDestinationById(currentPoint.destination);
+      const allOffersByType = this.#pointModel.getOffersByType(currentPoint.type);
+      const currentPointSelectedOffers = currentPoint.offers.map((offerId) => this.#pointModel.getOfferById(offerId));
+
+      this.#renderPoint(currentPoint, currentPointDestination, allOffersByType, currentPointSelectedOffers);
     }
   }
+
+  #renderNoPoints() {
+    this.#noPointsComponent = new NoPointsView(this.#filterType);
+
+    render(this.#noPointsComponent, this.#container);
+  }
+
+  #createNewPointPresenter() {
+    this.#newPointPresenter = new NewPointPresenter({
+      pointsListContainer: this.#eventsListComponent.element,
+      point: BLANK_POINT,
+      allDestinations: this.#allDestinations,
+      destination: this.#pointModel.getDestinationById(BLANK_POINT.destination),
+      allOffers: this.#allOffers,
+      offers: this.#pointModel.getOffersByType(BLANK_POINT.type),
+      onDataChange: this.#handleViewAction,
+      onDestroy: this.#handleNewPointFormDestroy,
+    });
+  }
+
+  #clearBoard({ resetSortType = false } = {}) {
+    this.#newPointPresenter.destroy();
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
+
+    remove(this.#sortComponent);
+    remove(this.#loadingComponent);
+
+    if (this.#noPointsComponent) {
+      remove(this.#noPointsComponent);
+    }
+
+    if (resetSortType) {
+      this.#currentSortType = SortType.DEFAULT;
+    }
+  }
+
+  #renderBoard() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return null;
+    }
+
+    if (this.#isFailed) {
+      this.#renderFailedLoadData();
+      return null;
+    }
+
+    if (this.points.length === 0) {
+      this.#renderNoPoints();
+      return;
+    }
+
+    this.#renderSort();
+    this.#renderPointsList();
+  }
+
+  #handleNewPointFormDestroy = () => {
+    this.#newPointDestroyHandler();
+
+    if (this.points.length === 0) {
+      remove(this.#eventsListComponent);
+      this.#renderNoPoints();
+    }
+  };
+
+  #handleModeChange = () => {
+    this.#newPointPresenter.destroy();
+    this.#pointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return null;
+    }
+
+    this.#currentSortType = sortType;
+    this.#clearBoard();
+    this.#renderBoard();
+  };
 }

@@ -1,7 +1,8 @@
-import {createElement} from '../render.js';
-import {humanizePointDate, humanizePointTime, countPointDuration} from '../utils.js';
+import AbstractView from '../framework/view/abstract-view.js';
+import {humanizePointDate, humanizePointTime, countPointDuration} from '../utils/point.js';
+import he from 'he';
 
-function createSelectedOffersTemplate(offers) {
+function createSelectedOffersTemplate(offers = []) {
   return offers.length > 0 ? (
     `<ul class="event__selected-offers">
       ${offers.map((offer) => `<li class="event__offer">${offer.title} +€&nbsp;${offer.price}</li>`).join('')}
@@ -24,7 +25,7 @@ function createPointTemplate(point, destination, offers) {
           <div class="event__type">
             <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
           </div>
-          <h3 class="event__title">${type} ${destination.name}</h3>
+          <h3 class="event__title">${type} ${he.encode(destination.name)}</h3>
           <div class="event__schedule">
             <p class="event__time">
               <time class="event__start-time" datetime="${dateFrom}">${pointTimeFrom}</time>
@@ -52,26 +53,36 @@ function createPointTemplate(point, destination, offers) {
   );
 }
 
-export default class PointView {
-  constructor({ point, destination, offers }) {
-    this.point = point;
-    this.destination = destination;
-    this.offers = offers;
+export default class PointView extends AbstractView {
+  #point;
+  #destination;
+  #offers;
+  #handleEditClick = null;
+  #handleFavoriteClick = null;
+
+  constructor({ point, destination, selectedOffers, onEditClick, onFavoriteClick }) {
+    super();
+    this.#point = point;
+    this.#destination = destination;
+    this.#offers = selectedOffers;
+    this.#handleEditClick = onEditClick;
+    this.#handleFavoriteClick = onFavoriteClick;
+
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#editClickHandler);
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#favoriteClickHandler);
   }
 
-  getTemplate() {
-    return createPointTemplate(this.point, this.destination, this.offers);
+  get template() {
+    return createPointTemplate(this.#point, this.#destination, this.#offers);
   }
 
-  getElement() {
-    if (!this.element) {
-      this.element = createElement(this.getTemplate());
-    }
+  #editClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleEditClick();
+  };
 
-    return this.element;
-  }
-
-  removeElement() {
-    this.element = null;
-  }
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#handleFavoriteClick();
+  };
 }
