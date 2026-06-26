@@ -144,6 +144,32 @@ export default class NewPointFormView extends AbstractStatefulView {
     this.#setDatePickers();
   }
 
+  #setDatePickers() {
+    this.#dateFromPicker = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.point.dateFrom,
+        maxDate: this._state.point.dateTo,
+        enableTime: true,
+        'time_24hr': true,
+        onChange: this.#dateFromChangeHandler,
+      }
+    );
+
+    this.#dateToPicker = flatpickr(
+      this.element.querySelector('#event-end-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._state.point.dateTo,
+        minDate: this._state.point.dateFrom,
+        enableTime: true,
+        'time_24hr': true,
+        onChange: this.#dateToChangeHandler,
+      }
+    );
+  }
+
   #typeChangeHandler = (evt) => {
     if (!evt.target.tagname === 'INPUT') {
       return null;
@@ -232,32 +258,6 @@ export default class NewPointFormView extends AbstractStatefulView {
       });
     }
   };
-
-  #setDatePickers() {
-    this.#dateFromPicker = flatpickr(
-      this.element.querySelector('#event-start-time-1'),
-      {
-        dateFormat: 'd/m/y H:i',
-        defaultDate: this._state.point.dateFrom,
-        maxDate: this._state.point.dateTo,
-        enableTime: true,
-        'time_24hr': true,
-        onChange: this.#dateFromChangeHandler,
-      }
-    );
-
-    this.#dateToPicker = flatpickr(
-      this.element.querySelector('#event-end-time-1'),
-      {
-        dateFormat: 'd/m/y H:i',
-        defaultDate: this._state.point.dateTo,
-        minDate: this._state.point.dateFrom,
-        enableTime: true,
-        'time_24hr': true,
-        onChange: this.#dateToChangeHandler,
-      }
-    );
-  }
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();

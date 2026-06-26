@@ -12,8 +12,8 @@ import NewPointPresenter from './new-point-presenter.js';
 import PointPresenter from './point-presenter.js';
 
 const TimeLimit = {
-  LOWER_LIMIT: 50,
-  UPPER_LIMIT: 1000,
+  LOWER_LIMIT: 350,
+  UPPER_LIMIT: 700,
 };
 
 export default class BoardPresenter {
@@ -88,15 +88,6 @@ export default class BoardPresenter {
 
     this.#newPointPresenter.init();
   }
-
-  #handleNewPointFormDestroy = () => {
-    this.#newPointDestroyHandler();
-
-    if (this.points.length === 0) {
-      remove(this.#eventsListComponent);
-      this.#renderNoPoints();
-    }
-  };
 
   #renderPoint(point, destination, offers, selectedOffers) {
     const pointPresenter = new PointPresenter({
@@ -173,21 +164,6 @@ export default class BoardPresenter {
         this.#isFailed = true;
         this.#renderBoard();
     }
-  };
-
-  #handleModeChange = () => {
-    this.#newPointPresenter.destroy();
-    this.#pointPresenters.forEach((presenter) => presenter.resetView());
-  };
-
-  #handleSortTypeChange = (sortType) => {
-    if (this.#currentSortType === sortType) {
-      return null;
-    }
-
-    this.#currentSortType = sortType;
-    this.#clearBoard();
-    this.#renderBoard();
   };
 
   #renderLoading() {
@@ -275,4 +251,28 @@ export default class BoardPresenter {
     this.#renderSort();
     this.#renderPointsList();
   }
+
+  #handleNewPointFormDestroy = () => {
+    this.#newPointDestroyHandler();
+
+    if (this.points.length === 0) {
+      remove(this.#eventsListComponent);
+      this.#renderNoPoints();
+    }
+  };
+
+  #handleModeChange = () => {
+    this.#newPointPresenter.destroy();
+    this.#pointPresenters.forEach((presenter) => presenter.resetView());
+  };
+
+  #handleSortTypeChange = (sortType) => {
+    if (this.#currentSortType === sortType) {
+      return null;
+    }
+
+    this.#currentSortType = sortType;
+    this.#clearBoard();
+    this.#renderBoard();
+  };
 }

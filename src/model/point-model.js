@@ -12,6 +12,18 @@ export default class PointModel extends Observable {
     this.#pointsApiService = pointsApiService;
   }
 
+  get points() {
+    return this.#points;
+  }
+
+  get destinations() {
+    return this.#destinations;
+  }
+
+  get offers() {
+    return this.#offers;
+  }
+
   async init() {
     try {
       const points = await this.#pointsApiService.points;
@@ -29,18 +41,6 @@ export default class PointModel extends Observable {
     }
 
     this._notify(UpdateType.INIT);
-  }
-
-  get points() {
-    return this.#points;
-  }
-
-  get destinations() {
-    return this.#destinations;
-  }
-
-  get offers() {
-    return this.#offers;
   }
 
   getDestinationById(id) {
